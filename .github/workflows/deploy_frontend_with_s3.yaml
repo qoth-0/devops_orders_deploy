@@ -16,10 +16,12 @@ jobs:
         node-version: '20'
 
     - name: npm install
+      working-directory: ./ordering-frontend
       run: npm install
 
     - name: npm build
-      run: npm build
+      working-directory: ./ordering-frontend
+      run: npm run build
 
     - name: setup aws cli
       uses: aws-actions/configure-aws-credentials@v2
@@ -29,4 +31,4 @@ jobs:
         aws-region: "ap-northeast-2"
     - name: deploy to s3
       run: |
-        aws s3 cp ./dist s3://order-system-qoth/ --recursive
+        aws s3 cp ./ordering-frontend/dist s3://order-system-qoth/ --recursive
