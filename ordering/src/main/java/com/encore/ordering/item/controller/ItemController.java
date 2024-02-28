@@ -37,6 +37,11 @@ public class ItemController {
                 new CommonResponse(HttpStatus.CREATED, "item successfully created", item.getId()), HttpStatus.CREATED);
     }
 
+    @GetMapping("/")
+    public String home() {
+        return "ok";
+    }
+
     @GetMapping("/items")
     public ResponseEntity<List<ItemResDto>> items(ItemSearchDto itemSearchDto, Pageable pageable) { // 검색 키워드에 따라 내용이 달라짐
         List<ItemResDto> itemResDtos = itemService.findAll(itemSearchDto, pageable);

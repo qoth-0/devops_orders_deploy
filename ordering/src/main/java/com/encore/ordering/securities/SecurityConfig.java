@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .cors().and() // CORS 활성화 - 특정 도메인만 허용
                 .httpBasic().disable() // http에 대한 기본 authentication은 사용 x - 직접 커스텀할 것
                 .authorizeRequests() // antMatchers의 url은 로그인 안해도 접근 가능
-                    .antMatchers("/member/create", "/items", "/item/*/image", "/doLogin") // doLogin 직접 구현할 것
+                    .antMatchers("/", "/member/create", "/items", "/item/*/image", "/doLogin") // doLogin 직접 구현할 것
                     .permitAll()
                 .anyRequest().authenticated() // 그 외 요청은 authenticated함(Authentication 객체 필요)
                 .and()
