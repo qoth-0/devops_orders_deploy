@@ -31,10 +31,29 @@ jobs:
     - name: Copy jar to EC2
       uses: appleboy/scp-action@master
       with:
-        # Github Secret 처리
+        # Github Secret 처리.
         host: ${{ secrets.EC2_HOST1 }}
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         source: "./ordering/build/libs/*.jar"
         # 우분투 경로
         target: "/home/${{ secrets.EC2_USERNAME }}"
+
+    - name: install java and run jar on ec2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST1 }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        # 쉘스크립트에 -y옵션 잘 넣어줘야함 - 수동으로 yes 못하니까 / nohup은 백그라운드 실행 - log엔 안찍힘, 터미널 닫아도 실행중, 2>&1 &와 세트 
+        script: |
+          if ! type java > /dev/null; then
+            sudo apt update && sudo apt install openjdk-11-jdk -y 
+          else
+            echo "java is already installed"
+          fi
+          sudo killall java || true 
+          nohup java -jar /home/${{ secrets.EC2_USERNAME }}/ordering/build/libs/*.jar \
+          --spring.datasource.url=jdbc:mariadb://${{ secrets.DB_HOST }}:3306/spring_order \
+          --spring.datasource.username=${{ secrets.DB_USERNAME }} \
+          --spring.datasource.password=${{ secrets.DB_PASSWORD }} > /home/${{ secrets.EC2_USERNAME }}/app.log 2>&1 &
