@@ -25,6 +25,7 @@ jobs:
       # 배포할 폴더로 이동
       working-directory: ./ordering
       # 실행 가능한 jar파일만 생성 (plain jar 미생성)
+      # chmod로 gradlew 실행권한 추가
       run: |
         chmod +x ./gradlew
         ./gradlew bootJar
