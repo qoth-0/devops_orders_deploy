@@ -1,4 +1,56 @@
-# 도커허브에 이미지 push, ec2에 ssh로그인, dockerhub에 업로드된 이미지를 ec2에서 pull
+# # 도커허브에 이미지 push, ec2에 ssh로그인, dockerhub에 업로드된 이미지를 ec2에서 pull
+
+# name: Deploy to EC2 With Docker
+# on:
+#   push:
+#     branches:
+#     - main
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       #  소스 코드를 ubuntu로 가져옴
+#     - uses: actions/checkout@v2
+#       # 도커 이미지 build
+#     - name: Build Docker Image
+#       working-directory: ./ordering
+#       run: docker build -t bny1324/ordering:v2 .
+#       # 도커허브 로그인
+#     - name: DockerHub Login
+#       uses: docker/login-action@v1
+#       with:
+#         username: ${{ secrets.DOCKER_USERNAME }}
+#         password: ${{ secrets.DOCKER_PASSWORD }}
+#       # 도커 이미지 push
+#     - name: Push Docker Image to DockerHub
+#       run: docker push bny1324/ordering:v2
+#       # ssh 로그인, 도커 실행  
+#     - name: ec2 ssh login and docker run
+#       uses: appleboy/ssh-action@master
+#       with:
+#         host: ${{ secrets.EC2_HOST1 }}
+#         username: ${{ secrets.EC2_USERNAME }}
+#         key: ${{ secrets.EC2_SSH_KEY }}
+#               # type docker : docker 명령어가 현재 시스템에 존재하는지 확인
+#               # > /dev/null : 명령어의 결과값 출력을 무시할 때 사용
+#         script: |
+            
+#           if ! type docker > /dev/null ; then 
+#               # curl : http 호출 특정 포트와 서비스가 살아있는지 확인하는데 사용
+#               # docker 다운로드 get-docker.sh로 저장
+#             curl -s https://get.docker.com -o get-docker.sh
+#               # sh 실행 
+#             sudo sh get-docker.sh
+#           fi
+#               # dockerhub 로그인 
+#           sudo docker login --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
+#           sudo docker pull bny1324/ordering:v2
+#           sudo docker rm -f order-backend || true
+
+#           sudo docker run -d --name order-backend -p 8080:8080 \
+#           -e SPRING_DATASOURCE_URL=jdbc:mariadb://${{ secrets.DB_HOST }}:3306/spring_order \
+#           -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }} \
+#           -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} bny1324/ordering:v2
 
 name: Deploy to EC2 With Docker
 on:
@@ -9,45 +61,36 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      #  소스 코드를 ubuntu로 가져옴
     - uses: actions/checkout@v2
-      # 도커 이미지 build
     - name: Build Docker Image
       working-directory: ./ordering
-      run: docker build -t bny1324/ordering:v2 .
-      # 도커허브 로그인
+      run: docker build -t bellwin/ordering_server:v2 .
     - name: DockerHub Login
       uses: docker/login-action@v1
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-      # 도커 이미지 push
     - name: Push Docker Image to DockerHub
-      run: docker push bny1324/ordering:v2
-      # ssh 로그인, 도커 실행  
-    - name: ec2 ssh login and docker run
+      run: docker push bellwin/ordering_server:v2
+    - name: EC2 SSH Login & Docker Run
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST1 }}
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
-              # type docker : docker 명령어가 현재 시스템에 존재하는지 확인
-              # > /dev/null : 명령어의 결과값 출력을 무시할 때 사용
+        # type docker: docker 명령어가 현재 시스템에 존재하는 지 확인
+        # > /dev/null : 명령어의 출력을 무시할 때 사용
+        # curl : 특정 호출에 대해 api의 응답이 오는지 확인
+          # curl -s docker 홈페이지에서 docker 파일을 다운로드를 받음 (-o: 파일 저장)
         script: |
-            
-          if ! type docker > /dev/null ; then 
-              # curl : http 호출 특정 포트와 서비스가 살아있는지 확인하는데 사용
-              # docker 다운로드 get-docker.sh로 저장
+          if ! type docker > /dev/null ; then
             curl -s https://get.docker.com -o get-docker.sh
-              # sh 실행 
             sudo sh get-docker.sh
           fi
-              # dockerhub 로그인 
           sudo docker login --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
-          sudo docker pull bny1324/ordering:v2
-          sudo docker rm -f order-backend || true
-
-          sudo docker run -d --name order-backend -p 8080:8080 \
+          sudo docker pull bellwin/ordering_server:v2
+          sudo docker rm -f ordering_server || true
+          sudo docker run -d --name ordering_server -p 80:8080 \
           -e SPRING_DATASOURCE_URL=jdbc:mariadb://${{ secrets.DB_HOST }}:3306/spring_order \
           -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }} \
-          -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} bny1324/ordering:v2
+          -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} bellwin/ordering_server:v2
