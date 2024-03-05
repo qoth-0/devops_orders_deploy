@@ -39,7 +39,7 @@ jobs:
               # curl : http 호출 특정 포트와 서비스가 살아있는지 확인하는데 사용
               # docker 다운로드 get-docker.sh로 저장
             curl -s https://get.docker.com -o get-docker.sh
-              # sh 실행
+              # sh 실행 
             sudo sh get-docker.sh
           fi
               # dockerhub 로그인 
