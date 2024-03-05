@@ -24,7 +24,7 @@ jobs:
       # 도커 이미지 push
     - name: Push Docker Image to DockerHub
       run: docker push bny1324/ordering:v2
-      # ssh 로그인, 도커 실행
+      # ssh 로그인, 도커 실행 
     - name: ec2 ssh login and docker run
       uses: appleboy/ssh-action@master
       with:
